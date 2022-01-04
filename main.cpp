@@ -11,7 +11,15 @@ int main(void) {
     sf::RenderWindow window(sf::VideoMode(1200, 800), "state machine sim");
     std::vector<std::shared_ptr<StateCircle>> states;
     std::shared_ptr<StateCircle> tempState;
-    // std::vector<sf::FloatRect> stateBounds;
+    sf::RectangleShape stateDock;
+    stateDock.setSize(sf::Vector2f(100,100));
+    stateDock.setFillColor(sf::Color(115,115,115));
+    stateDock.setOutlineColor(sf::Color::Black);
+    stateDock.setOutlineThickness(10.f);
+    sf::Vertex line[] = {
+        sf::Vertex(sf::Vector2f(200,200)),
+        sf::Vertex(sf::Vector2f(300,300))
+    };
     char q0c = 'A';
     std::string q0s;
     q0s.push_back(q0c);
@@ -19,7 +27,7 @@ int main(void) {
     states.push_back(q0);
     sf::Vector2f mouseDownPosition;
     // button for creating a new state circle
-    Button newStateBtn("New State", sf::Vector2f(1100, 35), sf::Vector2f(125, 50));
+    Button newStateBtn("New State", sf::Vector2f(200, 35), sf::Vector2f(125, 50));
 
     while (window.isOpen()) {
         sf::Event event;
@@ -63,11 +71,15 @@ int main(void) {
             }
         }
         window.clear();
+        window.RenderTarget::clear(sf::Color(153, 153, 153, 153));
+        window.draw(stateDock);
+        window.draw(newStateBtn);
+        window.draw(line, 2, sf::Lines);
         for (int i = 0; i < states.size(); i++) {
             window.draw(*states[i]);
         }
         
-        window.draw(newStateBtn);
+        
         window.display();
     }
 

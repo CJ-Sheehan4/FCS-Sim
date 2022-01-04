@@ -4,7 +4,7 @@ StateCircle::StateCircle(std::string initState) {
 	state = initState;
 	// create circle state
 	shape.setRadius(50.f);
-	shape.setFillColor(sf::Color::Green);
+	shape.setFillColor(sf::Color::White);
 	sf::FloatRect circRect = shape.getLocalBounds();
 	shape.setOrigin(circRect.left + circRect.width / 2.0f,
 		circRect.top + circRect.height / 2.0f);
@@ -17,7 +17,7 @@ StateCircle::StateCircle(std::string initState) {
 	text.setFont(font);
 	text.setCharacterSize(25);
 	text.setStyle(sf::Text::Bold);
-	text.setFillColor(sf::Color::Red);
+	text.setFillColor(sf::Color::Blue);
 	sf::FloatRect textRect = text.getLocalBounds();
 	text.setOrigin(textRect.left + textRect.width / 2.0f,
 		textRect.top + textRect.height / 2.0f);
