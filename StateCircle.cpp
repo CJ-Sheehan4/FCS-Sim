@@ -22,15 +22,22 @@ StateCircle::StateCircle(std::string initState) {
 	text.setOrigin(textRect.left + textRect.width / 2.0f,
 		textRect.top + textRect.height / 2.0f);
 	text.setPosition(shape.getOrigin());
-
-
 }
 void StateCircle::setPosition(sf::Vector2i pos) {
 	shape.setPosition(pos.x, pos.y);
 	text.setPosition(pos.x, pos.y);
 }
+sf::Vector2f StateCircle::getPosition() {
+	return shape.getPosition();
+}
 sf::FloatRect StateCircle::getGlobalBounds() {
 	return shape.getGlobalBounds();
+}
+void StateCircle::setGlobalFR(sf::FloatRect initFr) {
+	global_fr = initFr;
+}
+sf::FloatRect StateCircle::getGlobalFR() {
+	return global_fr;
 }
 sf::FloatRect StateCircle::getLocalBounds() {
 	return shape.getLocalBounds();
