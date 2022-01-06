@@ -5,6 +5,7 @@
 class Button : public sf::Drawable {
 public:
 	Button(std::string inittext, sf::Vector2f initpos, sf::Vector2f initsize);
+	void setColor(sf::Color color);
 	sf::FloatRect getGlobalBounds();
 	sf::FloatRect getLocalBounds();
 private:

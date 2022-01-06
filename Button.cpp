@@ -3,7 +3,7 @@ Button::Button(std::string inittext, sf::Vector2f initpos, sf::Vector2f initsize
 	buttonText = inittext;
 	shape.setSize(initsize);
 	shape.setPosition(initpos);
-	shape.setFillColor(sf::Color::White);
+	shape.setFillColor(sf::Color(193, 193, 193, 193));
 	sf::FloatRect RectRect = shape.getLocalBounds();
 	shape.setOrigin(RectRect.left + RectRect.width / 2.0f,
 		RectRect.top + RectRect.height / 2.0f);
@@ -23,6 +23,9 @@ Button::Button(std::string inittext, sf::Vector2f initpos, sf::Vector2f initsize
 	text.setPosition(shape.getPosition());
 
 
+}
+void Button::setColor(sf::Color color) {
+	shape.setFillColor(color);
 }
 sf::FloatRect Button::getGlobalBounds() {
 	return shape.getGlobalBounds();

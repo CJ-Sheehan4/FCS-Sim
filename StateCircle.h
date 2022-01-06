@@ -11,6 +11,10 @@ public:
 	void setGlobalFR(sf::FloatRect initFr);
 	sf::FloatRect getGlobalFR();
 	sf::FloatRect getLocalBounds();
+	void setTextColor(sf::Color color);
+	sf::Color getTextColor();
+	std::string getState();
+	void stateSelected(std::vector<std::shared_ptr<StateCircle>> states);
 private:
 	std::string state;
 	sf::CircleShape shape;

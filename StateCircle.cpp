@@ -42,6 +42,23 @@ sf::FloatRect StateCircle::getGlobalFR() {
 sf::FloatRect StateCircle::getLocalBounds() {
 	return shape.getLocalBounds();
 }
+void StateCircle::setTextColor(sf::Color color) {
+	text.setFillColor(color);
+}
+sf::Color StateCircle::getTextColor() {
+	return text.getFillColor();
+}
+std::string StateCircle::getState() {
+	return state;
+}
+void StateCircle::stateSelected(std::vector<std::shared_ptr<StateCircle>> states) {
+	text.setFillColor(sf::Color::Green);
+	for (int i = 0; i < states.size(); i++) {
+		if (states[i]->state != this->state) {
+			states[i]->text.setFillColor(sf::Color::Blue);
+		}
+	}
+}
 void StateCircle::draw(sf::RenderTarget& target, sf::RenderStates states)const {
 	target.draw(shape);
 	target.draw(text);
