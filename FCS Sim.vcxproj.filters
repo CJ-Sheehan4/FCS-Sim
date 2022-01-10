@@ -24,12 +24,33 @@
     <ClCompile Include="StateCircle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DFA.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Trans.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DisplayText.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Button.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StateCircle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DFA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Trans.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DisplayText.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TransStr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

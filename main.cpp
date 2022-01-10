@@ -5,11 +5,17 @@
 #include "StateCircle.h"
 #include "Button.h"
 #include "Trans.h"
+#include "DisplayText.h"
+#include "TransStr.h"
 #include <string>
 #include <vector>
 #include <memory>
+#include <utility>
 bool inGlobalBounds(std::shared_ptr<StateCircle> state, 
     std::vector<std::shared_ptr<StateCircle>> states);
+pair<bool, std::shared_ptr<StateCircle>> mouseWithinAState(sf::Vector2i localPosition,
+    std::vector<std::shared_ptr<StateCircle>> states);
+void updateTransPosition(std::vector<std::shared_ptr<Trans>> transitions);
 
 int main(void) {
 
@@ -22,8 +28,11 @@ int main(void) {
 
     sf::RenderWindow window(sf::VideoMode(1200, 800), "state machine sim");
     std::vector<std::shared_ptr<StateCircle>> states;
+    std::vector<std::shared_ptr<Trans>> transitions;
     std::shared_ptr<StateCircle> tempState;
+    std::shared_ptr<StateCircle> tempState2;
     sf::RectangleShape stateDock;
+    
     stateDock.setSize(sf::Vector2f(100,100));
     stateDock.setFillColor(sf::Color(115,115,115));
     stateDock.setOutlineColor(sf::Color::Black);
@@ -39,14 +48,23 @@ int main(void) {
     // button for creating a new state circle
     Button newStateBtn("New State", sf::Vector2f(200, 35), sf::Vector2f(125, 50));
     Button newTransBtn("Transition", sf::Vector2f(350, 35), sf::Vector2f(125, 50));
-    Trans t;
+    DisplayText transPrompt("Please click a state to transition from", sf::Vector2f(450, 25),
+        sf::Color(217, 17, 203));
+    TransStr tstr(" ","","");
+    DisplayText transDisplay(tstr.getStr(), sf::Vector2f(450, 50),
+        sf::Color(225, 225, 225));
     char transChar;
     bool transBtnSelected = false;
     bool transCharEntered = false;
+    bool transState1 = false;
+    bool transState2 = false;
+    bool displayLastStr = false;
     while (window.isOpen()) {
         
         sf::Event event;
         sf::Vector2i localPosition = sf::Mouse::getPosition(window);
+        pair<bool, std::shared_ptr<StateCircle>> mouseStateRet =
+            mouseWithinAState(localPosition, states);
         for (int i = 0; i < states.size(); i++) {
             states[i]->setGlobalFR(states[i]->getGlobalBounds());
         }
@@ -66,14 +84,6 @@ int main(void) {
                         std::shared_ptr<StateCircle> newState = std::make_shared<StateCircle>(q0s);
                         states.push_back(newState);
                         newStateBtn.setColor(sf::Color(193, 193, 193, 193));
-                    }
-                    if (tempState->getGlobalFR().contains(localPosition.x, localPosition.y)) {
-                        tempState->stateSelected(states);
-                        if (transCharEntered == true && transBtnSelected == true) {
-                            transBtnSelected = false;
-                            cout << "Transition Made: " << tempState->getState() <<
-                                " " << transChar;
-                        }
                     }
                 }
             }
@@ -97,9 +107,6 @@ int main(void) {
                     newStateBtn.setColor(sf::Color::White);
                 }
             }
-         /*   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-                t.setPoints(states[0], states[1]);
-            }*/
             if (event.type == sf::Event::MouseButtonReleased) {
                 if (event.mouseButton.button == sf::Mouse::Left) {
                     if (newTransBtnBounds.contains(localPosition.x, localPosition.y) &&
@@ -108,26 +115,87 @@ int main(void) {
                     }
                 }
             }
+            // if transition button is pressed 
             if (transBtnSelected == true) {
-                if (event.type == sf::Event::TextEntered) {
-                    if (event.text.unicode < 128) {
-                        transChar = static_cast<char>(event.text.unicode);
-                        transCharEntered = true;
+                // if after the transition button is pressed, a state is selected
+                if (tempState->getGlobalFR().contains(localPosition.x, localPosition.y) && transState1 == false
+                    && event.type == sf::Event::MouseButtonReleased) {
+                    // store the selected state in a temp state
+                    tempState->stateSelected(states);
+                    tempState2 = tempState;
+                    // first state selected is true
+                    transState1 = true;
+                }
+                // if after transition button pressed, and first state selected, 
+                // enter a character to assign a transition to
+                if (transState1 == true) {
+                    transPrompt.changeStr("Enter a Character");          
+                    tstr.setS1(tempState2->getState());
+                    transDisplay.changeStr(tstr.getStr());
+                    if (event.type == sf::Event::TextEntered) {
+                        if (event.text.unicode < 128) {
+                            transChar = static_cast<char>(event.text.unicode);
+                            transCharEntered = true;
+                        }
                     }
-                    
+                }
+                // after selecting state, and character, select State to transition to
+                if (transCharEntered == true && transState1 == true) {
+                    transPrompt.changeStr("Click a State to transition to");                     
+                    tstr.setC(transChar);
+                    transDisplay.changeStr(tstr.getStr());
+                    if (tempState->getGlobalFR().contains(localPosition.x, localPosition.y) &&
+                        event.type == sf::Event::MouseButtonReleased) {
+                        // store the selected state in a temp state
+                        tempState->stateSelected(states);
+                        // first state selected is true
+                        transBtnSelected = false;
+                        transCharEntered = false;
+                        transState1 = false;    
+                        displayLastStr = true;
+                        std::shared_ptr<Trans> t = std::make_shared<Trans>();
+                        t->setPoints(tempState2, tempState);
+                        t->setC(transChar);
+                        transitions.push_back(t);
+                        transPrompt.changeStr("Transition made:");
+                        tstr.setS2(tempState->getState());
+                        transDisplay.changeStr(tstr.getStr());
+                    }
                 }
             }
+
+            if (twoStatesSelected(states) && event.type == sf::Event::MouseButtonPressed &&
+                mouseStateRet.first == false) {
+                   resetTextColor(states); 
+                   displayLastStr = false;
+            }
+            updateTransPosition(transitions);
         }
         window.clear();
         window.RenderTarget::clear(sf::Color(153, 153, 153, 153));
         window.draw(stateDock);
         window.draw(newStateBtn);
         window.draw(newTransBtn);
-        window.draw(t);
-
+        // draw all the transitions
+        for (int i = 0; i < transitions.size(); i++) {
+            window.draw(*transitions[i]);
+        }
+        // draw all the states
         for (int i = 0; i < states.size(); i++) {
             window.draw(*states[i]);
         }
+        if (transBtnSelected || displayLastStr) {
+            window.draw(transPrompt);
+            window.draw(transDisplay);            
+        }
+        else {
+            transPrompt.changeStr("Please click a state to transition from");
+            tstr.setS1(" ");
+            tstr.setC("");
+            tstr.setS2("");
+            transDisplay.changeStr(tstr.getStr());
+        }
+       
         window.display();
     }
 
@@ -139,5 +207,24 @@ bool inGlobalBounds(std::shared_ptr<StateCircle> state, std::vector<std::shared_
             && states[i] != state) {
             return true;
         }
+    }
+}
+// if the mouse is within a states bounds this function returns that state,
+// otherwise it returns false
+pair<bool, std::shared_ptr<StateCircle>> mouseWithinAState(sf::Vector2i localPosition, 
+    std::vector<std::shared_ptr<StateCircle>> states) {
+        for (int i = 0; i < states.size(); i++) {
+            if (states[i]->getGlobalFR().contains(localPosition.x, localPosition.y)) {
+                return pair<bool, std::shared_ptr<StateCircle>>(true, states[i]);
+            }
+        }
+        return pair<bool, std::shared_ptr<StateCircle>>(false, nullptr);
+}
+void updateTransPosition(std::vector<std::shared_ptr<Trans>> transitions) {
+    for (int i = 0; i < transitions.size(); i++) {
+        std::pair<std::shared_ptr<StateCircle>, std::shared_ptr<StateCircle>> ret = 
+            transitions[i]->getStates();
+            transitions[i]->setLine(ret.first->getPosition(), ret.second->getPosition());
+            transitions[i]->setText();
     }
 }

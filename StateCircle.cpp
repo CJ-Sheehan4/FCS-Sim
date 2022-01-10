@@ -52,11 +52,25 @@ std::string StateCircle::getState() {
 	return state;
 }
 void StateCircle::stateSelected(std::vector<std::shared_ptr<StateCircle>> states) {
-	text.setFillColor(sf::Color::Green);
+	text.setFillColor(sf::Color(217, 17, 203));
+}
+void resetTextColor(std::vector<std::shared_ptr<StateCircle>> states) {
 	for (int i = 0; i < states.size(); i++) {
-		if (states[i]->state != this->state) {
-			states[i]->text.setFillColor(sf::Color::Blue);
+		states[i]->setTextColor(sf::Color::Blue);
+	}
+}
+bool twoStatesSelected(std::vector<std::shared_ptr<StateCircle>> states) {
+	int num = 0;
+	for (int i = 0; i < states.size(); i++) {
+		if (states[i]->getTextColor() == sf::Color(217, 17, 203)) {
+			num++;
 		}
+	}
+	if (num > 1) {
+		return true;
+	}
+	else {
+		return false;
 	}
 }
 void StateCircle::draw(sf::RenderTarget& target, sf::RenderStates states)const {

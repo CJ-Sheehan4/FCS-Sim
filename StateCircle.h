@@ -24,4 +24,6 @@ private:
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states)const;
 };
 
+void resetTextColor(std::vector<std::shared_ptr<StateCircle>> states);
+bool twoStatesSelected(std::vector<std::shared_ptr<StateCircle>> states);
 #endif

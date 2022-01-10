@@ -146,12 +146,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Button.cpp" />
+    <ClCompile Include="DFA.cpp" />
+    <ClCompile Include="DisplayText.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="StateCircle.cpp" />
+    <ClCompile Include="Trans.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Button.h" />
+    <ClInclude Include="DFA.h" />
+    <ClInclude Include="DisplayText.h" />
     <ClInclude Include="StateCircle.h" />
+    <ClInclude Include="Trans.h" />
+    <ClInclude Include="TransStr.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
