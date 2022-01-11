@@ -20,14 +20,18 @@ public:
 	sf::Vector2f getP2();
 	void setLine(sf::Vector2f p1, sf::Vector2f p2);
 	sf::Vertex *getLine();
-
+	void moveLine(sf::Vector2f p1, sf::Vector2f p2);
 	std::pair<std::shared_ptr<StateCircle>, std::shared_ptr<StateCircle>> getStates(void);
+	bool isSelfLoop;
 private:
 	std::shared_ptr<StateCircle> s1;
 	std::shared_ptr<StateCircle> s2;
 	sf::Vertex line[2];
 	sf::Vector2f p1;
 	sf::Vector2f p2;
+	sf::CircleShape selfLoop;
+	
+	sf::CircleShape arrow;
 	char c;
 	sf::Font font;
 	sf::Text text;
