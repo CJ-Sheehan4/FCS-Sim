@@ -10,7 +10,7 @@ StateCircle::StateCircle(std::string initState) {
 		circRect.top + circRect.height / 2.0f);
 	shape.setPosition(50.f, 50.f);
 	// Create font
-	font.loadFromFile("Azonix.otf");
+	font.loadFromFile("Pulang.otf");
 	// Create text for state number
 	// set it to the middle of circle state
 	text.setString(state);
@@ -51,8 +51,15 @@ sf::Color StateCircle::getTextColor() {
 std::string StateCircle::getState() {
 	return state;
 }
+char StateCircle::getStateChar() {
+	return state[0];
+}
 void StateCircle::stateSelected(std::vector<std::shared_ptr<StateCircle>> states) {
 	text.setFillColor(sf::Color(217, 17, 203));
+}
+void StateCircle::makeAcceptState(void) {
+	shape.setOutlineColor(sf::Color(217, 17, 203));
+	shape.setOutlineThickness(5);
 }
 void resetTextColor(std::vector<std::shared_ptr<StateCircle>> states) {
 	for (int i = 0; i < states.size(); i++) {

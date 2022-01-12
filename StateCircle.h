@@ -14,7 +14,9 @@ public:
 	void setTextColor(sf::Color color);
 	sf::Color getTextColor();
 	std::string getState();
+	char getStateChar();
 	void stateSelected(std::vector<std::shared_ptr<StateCircle>> states);
+	void makeAcceptState(void);
 private:
 	std::string state;
 	sf::CircleShape shape;

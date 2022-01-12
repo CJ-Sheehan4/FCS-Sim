@@ -7,6 +7,7 @@
 #include "Trans.h"
 #include "DisplayText.h"
 #include "TransStr.h"
+#include <list>
 #include <string>
 #include <vector>
 #include <memory>
@@ -16,27 +17,24 @@ bool inGlobalBounds(std::shared_ptr<StateCircle> state,
 pair<bool, std::shared_ptr<StateCircle>> mouseWithinAState(sf::Vector2i localPosition,
     std::vector<std::shared_ptr<StateCircle>> states);
 void updateTransPosition(std::vector<std::shared_ptr<Trans>> transitions);
+std::list<int> convertToList(std::string str);
 
 int main(void) {
-
-    DFA<int, int>* dfa = new DFA<int, int>(
-        [](int s) { return s == 0; },
-        0,
-        [](int s, int c) { return 0; },
-        [](int s) {return false; }
-        );
-
+    std::list<int> str;
+    std::string strInput;
     sf::RenderWindow window(sf::VideoMode(1200, 800), "state machine sim");
     std::vector<std::shared_ptr<StateCircle>> states;
     std::vector<std::shared_ptr<Trans>> transitions;
+    std::vector<std::shared_ptr<StateCircle>> acceptStates;
     std::shared_ptr<StateCircle> tempState;
     std::shared_ptr<StateCircle> tempState2;
+    // The dock that the newly created states populate on
     sf::RectangleShape stateDock;
-    
     stateDock.setSize(sf::Vector2f(100,100));
     stateDock.setFillColor(sf::Color(115,115,115));
     stateDock.setOutlineColor(sf::Color::Black);
     stateDock.setOutlineThickness(10.f);
+    // First state
     char q0c = 'A';
     std::string q0s;
     q0s.push_back(q0c);
@@ -48,7 +46,13 @@ int main(void) {
     // buttons
     Button newStateBtn("New State", sf::Vector2f(200, 35), sf::Vector2f(125, 50));
     Button newTransBtn("Transition", sf::Vector2f(350, 35), sf::Vector2f(125, 50));
-    Button resetBtn("Reset", sf::Vector2f(1100, 35), sf::Vector2f(125, 50));
+    Button resetBtn("Reset", sf::Vector2f(200, 110), sf::Vector2f(125, 50));
+    resetBtn.setColor(sf::Color::White);
+    Button testStrBtn("Test String", sf::Vector2f(950, 110), sf::Vector2f(125, 50));
+    testStrBtn.setColor(sf::Color::White);
+    Button chooseAcceptBtn("Pick Accept\nState(s)", sf::Vector2f(350, 110), sf::Vector2f(125, 50));
+    // typing field for testStrBtn
+    Button typeFieldBtn("", sf::Vector2f(950, 35), sf::Vector2f(375, 50));
     // display texts
     DisplayText transPrompt("Please click a state to transition from", sf::Vector2f(450, 25),
         sf::Color(217, 17, 203));
@@ -61,8 +65,43 @@ int main(void) {
     bool transState1 = false;
     bool transState2 = false;
     bool displayLastStr = false;
+    bool typeFieldBtnSelected = false;
+    bool chooseAcceptBtnSelected = false;
+   
+
     while (window.isOpen()) {
-        
+        //// DFA Object
+        //DFA<int, int>* dfa = new DFA<int, int>(
+        //    [states](int s) {
+        //        for (int i = 0; i < states.size(); i++) {
+        //            cout << static_cast<int>(states[i]->getStateChar());
+        //            if (s == static_cast<int>(states[i]->getStateChar())) {
+        //                return true;
+        //            }
+        //        }
+        //        return false;
+        //    },
+        //    0,
+        //        [transitions](int s, int c) {
+        //        for (int i = 0; i < transitions.size(); i++) {
+        //            if (s == static_cast<int>(transitions[i]->getStates().first->getStateChar()) &&
+        //                c == transitions[i]->getC()) {
+        //                return static_cast<int>(transitions[i]->getStates().second->getStateChar());
+        //            }
+        //        }
+        //        return -1;
+        //    },
+        //        [acceptStates](int s) {
+        //        for (int i = 0; i < acceptStates.size(); i++) {
+        //            cout << static_cast<int>(acceptStates[i]->getStateChar());
+        //            if (s == static_cast<int>(acceptStates[i]->getStateChar())) {
+        //                return true;
+        //            }
+        //        }
+        //        return false;
+        //    }
+        //    );
+
         sf::Event event;
         sf::Vector2i localPosition = sf::Mouse::getPosition(window);
         pair<bool, std::shared_ptr<StateCircle>> mouseStateRet =
@@ -73,6 +112,9 @@ int main(void) {
         sf::FloatRect newStateBtnBounds = newStateBtn.getGlobalBounds();
         sf::FloatRect newTransBtnBounds = newTransBtn.getGlobalBounds();
         sf::FloatRect resetBtnBounds = resetBtn.getGlobalBounds();
+        sf::FloatRect typeFieldBtnBounds = typeFieldBtn.getGlobalBounds();
+        sf::FloatRect testStrBtnBounds = testStrBtn.getGlobalBounds();
+        sf::FloatRect chooseAcceptBtnBounds = chooseAcceptBtn.getGlobalBounds();
 
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
@@ -122,8 +164,9 @@ int main(void) {
                 }
             }
             // if transition button is pressed 
-            if (transBtnSelected == true) {
+            if (transBtnSelected == true && typeFieldBtnSelected == false) {
                 // if after the transition button is pressed, a state is selected
+                testStrBtn.setColor(sf::Color(193, 193, 193, 193));
                 if (tempState->getGlobalFR().contains(localPosition.x, localPosition.y) && transState1 == false
                     && event.type == sf::Event::MouseButtonReleased) {
                     // store the selected state in a temp state
@@ -167,6 +210,7 @@ int main(void) {
                         tstr.setS2(tempState->getState());
                         transDisplay.changeStr(tstr.getStr());
                         newTransBtn.setColor(sf::Color::White);
+                        testStrBtn.setColor(sf::Color::White);
                     }
                 }
             }
@@ -176,16 +220,83 @@ int main(void) {
                    displayLastStr = false;
             }
             if (event.type == sf::Event::MouseButtonReleased && 
-                event.mouseButton.button == sf::Mouse::Left &&
-                resetBtnBounds.contains(localPosition.x, localPosition.y)) {
-                        std::cout << "Reset";
-                        states.clear();
-                        transitions.clear();
-                        states.push_back(q0);
-                        tempState = q0;
-                        states[0]->setPosition(sf::Vector2i(50,50));
-                        q0c = 'A';
+                event.mouseButton.button == sf::Mouse::Left){
+                if (resetBtnBounds.contains(localPosition.x, localPosition.y)) {
+                    std::cout << "Reset";
+                    states.clear();
+                    transitions.clear();
+                    states.push_back(q0);
+                    tempState = q0;
+                    states[0]->setPosition(sf::Vector2i(50, 50));
+                    q0c = 'A';
+                }
+                if (typeFieldBtnBounds.contains(localPosition.x, localPosition.y)) {
+                    typeFieldBtnSelected = true;
+                }
+                if (testStrBtnBounds.contains(localPosition.x, localPosition.y)) {
+                    cout << strInput;
+                    
+                    typeFieldBtn.changeName(strInput);
+                    typeFieldBtnSelected = false;
+                    str = convertToList(strInput);
+                    // DFA Object
+                    DFA<int, int>* dfa = new DFA<int, int>(
+                        [states](int s) {
+                            for (int i = 0; i < states.size(); i++) {
+                                cout << "Q:" << static_cast<int>(states[i]->getStateChar());
+                                if (s == static_cast<int>(states[i]->getStateChar())) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        },
+                        65,
+                            [transitions](int s, int c) {
+                            for (int i = 0; i < transitions.size(); i++) {
+                                if (s == static_cast<int>(transitions[i]->getStates().first->getStateChar()) &&
+                                    c == transitions[i]->getC()) {
+                                    return static_cast<int>(transitions[i]->getStates().second->getStateChar());
+                                }
+                            }
+                            return -1;
+                        },
+                            [acceptStates](int s) {
+                            for (int i = 0; i < acceptStates.size(); i++) {
+                                cout << "F:"<<static_cast<int>(acceptStates[i]->getStateChar()) << endl;
+                                if (s == static_cast<int>(acceptStates[i]->getStateChar())) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }
+                        );
+                    if (dfa->accept(str)) {
+                        cout << endl << "ACCEPT" << endl;
+                    }
+                    else {
+                        cout << "str:";
+                        
+                           cout <<  dfa->d(0,str.front());
+                        
+                        cout << endl << "FAIL" << endl;
+                    }
+                    strInput.clear();
+                    typeFieldBtn.changeName(strInput);
+                }
+                if (chooseAcceptBtnBounds.contains(localPosition.x, localPosition.y)) {
+                    chooseAcceptBtnSelected = true;
+                    tempState->makeAcceptState();
+                    acceptStates.push_back(tempState);
+                }
             }
+            if (typeFieldBtnSelected) {
+                if (event.type == sf::Event::TextEntered) {      
+                    if (event.text.unicode < 128 && strInput.size() < 40) {
+                        strInput.push_back(static_cast<char>(event.text.unicode)); 
+                        typeFieldBtn.changeName(strInput);
+                    }
+                }
+            }          
             updateTransPosition(transitions);
         }
         window.clear();
@@ -194,6 +305,9 @@ int main(void) {
         window.draw(newStateBtn);
         window.draw(newTransBtn);
         window.draw(resetBtn);
+        window.draw(testStrBtn);
+        window.draw(typeFieldBtn);
+        window.draw(chooseAcceptBtn);
         // draw all the transitions
         for (int i = 0; i < transitions.size(); i++) {
             window.draw(*transitions[i]);
@@ -255,5 +369,12 @@ void updateTransPosition(std::vector<std::shared_ptr<Trans>> transitions) {
         }
             
     }
+}
+std::list<int> convertToList(std::string str) {
+    list<int> ret;
+    for (int i = 0; i < str.size(); i++) {
+        ret.push_back(static_cast<int>(str[i]));
+    }
+    return ret;
 }
 

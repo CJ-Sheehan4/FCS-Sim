@@ -7,6 +7,7 @@
 class DisplayText : public sf::Drawable {
 public:
 	DisplayText(std::string initStr, sf::Vector2f pos, sf::Color color);
+	void changeColor(sf::Color color);
 	void changeStr(std::string newStr);
 private:
 	std::string str;

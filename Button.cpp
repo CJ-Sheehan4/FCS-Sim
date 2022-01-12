@@ -9,13 +9,12 @@ Button::Button(std::string inittext, sf::Vector2f initpos, sf::Vector2f initsize
 		RectRect.top + RectRect.height / 2.0f);
 
 	// Create font
-	font.loadFromFile("Azonix.otf");
+	font.loadFromFile("Pulang.otf");
 	// Create text for state number
 	// set it to the middle of circle state
 	text.setString(buttonText);
 	text.setFont(font);
-	text.setCharacterSize(15);
-	text.setStyle(sf::Text::Bold);
+	text.setCharacterSize(20);
 	text.setFillColor(sf::Color::Black);
 	sf::FloatRect textRect = text.getLocalBounds();
 	text.setOrigin(textRect.left + textRect.width / 2.0f,
@@ -26,6 +25,14 @@ Button::Button(std::string inittext, sf::Vector2f initpos, sf::Vector2f initsize
 }
 void Button::setColor(sf::Color color) {
 	shape.setFillColor(color);
+}
+void Button::changeName(std::string str) {
+	buttonText = str;
+	text.setString(buttonText);
+	sf::FloatRect textRect = text.getLocalBounds();
+	text.setOrigin(textRect.left + textRect.width / 2.0f,
+		textRect.top + textRect.height / 2.0f);
+	text.setPosition(shape.getPosition());
 }
 sf::FloatRect Button::getGlobalBounds() {
 	return shape.getGlobalBounds();

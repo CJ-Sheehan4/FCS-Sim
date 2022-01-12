@@ -1,5 +1,6 @@
 #ifndef DFA_H
 #define DFA_H
+#include "Config.h"
 #include <iostream>
 #include <functional>
 #include <list>
@@ -22,4 +23,5 @@ public:
 	function<State(State, C)> d;		// function pointer representing the delta function
 	function<bool(State)> F;			// function pointer representing the set of accepting states
 };
+
 #endif

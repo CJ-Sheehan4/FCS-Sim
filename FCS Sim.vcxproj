@@ -154,6 +154,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Button.h" />
+    <ClInclude Include="Config.h" />
     <ClInclude Include="DFA.h" />
     <ClInclude Include="DisplayText.h" />
     <ClInclude Include="StateCircle.h" />

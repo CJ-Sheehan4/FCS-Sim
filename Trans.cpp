@@ -69,7 +69,7 @@ char Trans::getC() {
 }
 void Trans::setC(char newC) {
 	c = newC;
-	font.loadFromFile("Azonix.otf");
+	font.loadFromFile("Pulang.otf");
 	text.setString(c);
 	text.setFont(font);
 	text.setCharacterSize(15);
@@ -132,10 +132,7 @@ void Trans::setLine(sf::Vector2f p1, sf::Vector2f p2) {
 		float ty2 = (ty + s2Pos.y) / 2;
 		float tx2 = (tx + s2Pos.x) / 2;
 		arrow.setPosition(tx2, ty2);
-		
-		
 	}
-	
 }
 sf::Vertex* Trans::getLine() {
 	return line;

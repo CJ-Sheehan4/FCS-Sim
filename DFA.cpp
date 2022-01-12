@@ -1,6 +1,7 @@
 #include <iostream>
 #include <functional>
 #include "DFA.h"
+#include "Config.h"
 using namespace std;
 
 //constructor
