@@ -17,6 +17,7 @@ public:
 	char getStateChar();
 	void stateSelected(std::vector<std::shared_ptr<StateCircle>> states);
 	void makeAcceptState(void);
+	void unmakeAcceptState(void);
 private:
 	std::string state;
 	sf::CircleShape shape;

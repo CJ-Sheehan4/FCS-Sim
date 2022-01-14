@@ -20,8 +20,8 @@ Button::Button(std::string inittext, sf::Vector2f initpos, sf::Vector2f initsize
 	text.setOrigin(textRect.left + textRect.width / 2.0f,
 		textRect.top + textRect.height / 2.0f);
 	text.setPosition(shape.getPosition());
-
-
+	selected = false;
+	enabled = false;
 }
 void Button::setColor(sf::Color color) {
 	shape.setFillColor(color);
@@ -33,6 +33,23 @@ void Button::changeName(std::string str) {
 	text.setOrigin(textRect.left + textRect.width / 2.0f,
 		textRect.top + textRect.height / 2.0f);
 	text.setPosition(shape.getPosition());
+}
+void Button::setSelected(bool s) {
+	selected = s;
+}
+bool Button::isSelected(void) {
+	return selected;
+}
+void Button::enable(void) {
+	enabled = true;
+	shape.setFillColor(sf::Color::White);
+}
+void Button::disable(void) {
+	enabled = false;
+	shape.setFillColor(sf::Color(193, 193, 193, 193));
+}
+bool Button::isEnabled(void) {
+	return enabled;
 }
 sf::FloatRect Button::getGlobalBounds() {
 	return shape.getGlobalBounds();

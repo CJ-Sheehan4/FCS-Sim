@@ -61,6 +61,9 @@ void StateCircle::makeAcceptState(void) {
 	shape.setOutlineColor(sf::Color(217, 17, 203));
 	shape.setOutlineThickness(5);
 }
+void StateCircle::unmakeAcceptState(void) {
+	shape.setOutlineThickness(0);
+}
 void resetTextColor(std::vector<std::shared_ptr<StateCircle>> states) {
 	for (int i = 0; i < states.size(); i++) {
 		states[i]->setTextColor(sf::Color::Blue);
@@ -68,12 +71,14 @@ void resetTextColor(std::vector<std::shared_ptr<StateCircle>> states) {
 }
 bool twoStatesSelected(std::vector<std::shared_ptr<StateCircle>> states) {
 	int num = 0;
+	char tempStateChar1;
+	char tempStateChar2;
 	for (int i = 0; i < states.size(); i++) {
 		if (states[i]->getTextColor() == sf::Color(217, 17, 203)) {
 			num++;
 		}
 	}
-	if (num > 1) {
+	if (num > 1 || num == 1) {
 		return true;
 	}
 	else {
