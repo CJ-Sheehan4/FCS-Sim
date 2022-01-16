@@ -19,11 +19,14 @@ pair<bool, std::shared_ptr<StateCircle>> mouseWithinAState(sf::Vector2i localPos
     std::vector<std::shared_ptr<StateCircle>> states);
 void updateTransPosition(std::vector<std::shared_ptr<Trans>> transitions);
 std::list<int> convertToList(std::string str);
-bool verifyTransitions(std::vector<std::shared_ptr<Trans>> transitions,
+std::pair<bool, string> verifyTransitions(std::vector<std::shared_ptr<Trans>> transitions,
     std::shared_ptr<StateCircle> state, list<int> alpha, bool alphabetGot);
+std::pair<bool, string> verifyChar(list<int> alpha, char c);
 pair<string, sf::Color> testStrOnDFA(std::vector<std::shared_ptr<StateCircle>> states,
     std::vector<std::shared_ptr<Trans>> transitions,
     std::vector<std::shared_ptr<StateCircle>> acceptStates, list<int> str);
+void doubleTrans(std::vector<std::shared_ptr<Trans>> transitions);
+bool doubleChar(std::vector<std::shared_ptr<Trans>> transitions, std::shared_ptr<Trans> trans);
 
 int main(void) {
     std::list<int> str;
@@ -56,6 +59,7 @@ int main(void) {
     Button resetBtn("Reset", sf::Vector2f(200, 110), sf::Vector2f(125, 50));
     resetBtn.enable();
     Button submitBtn("Submit", sf::Vector2f(950, 130), sf::Vector2f(125, 50));
+    submitBtn.disable();
     Button chooseAcceptBtn("Accept\nState(s)", sf::Vector2f(350, 110), sf::Vector2f(125, 50));
     // typing field for testStrBtn
     Button typeFieldBtn("", sf::Vector2f(950, 55), sf::Vector2f(375, 50));
@@ -72,6 +76,11 @@ int main(void) {
     bool transState2 = false;
     bool displayLastStr = false;
     bool alphabetGot = false;
+    bool acceptChosen = false;
+    std::pair<bool, string> tVerifyChar;
+    tVerifyChar.first = true;
+    pair<bool, string> tVerify;
+    tVerify.first = true;
 
     while (window.isOpen()) {
         sf::Event event;
@@ -91,7 +100,7 @@ int main(void) {
                 // if the new state button is clicked on
                 if (newStateBtn.getGlobalBounds().contains(localPosition.x, localPosition.y) &&
                     states.back()->getPosition() != sf::Vector2f(50,50) &&
-                    (!newTransBtn.isSelected()) && alphabetGot) {
+                    (!newTransBtn.isSelected()) && alphabetGot && (!chooseAcceptBtn.isSelected())) {
                     q0c += 1;
                     q0s.erase();
                     q0s.push_back(q0c);
@@ -104,7 +113,7 @@ int main(void) {
                 // if the new transition button is clicked on
                 if (newTransBtn.getGlobalBounds().contains(localPosition.x, localPosition.y) &&
                     states.back()->getPosition() != sf::Vector2f(50, 50) && alphabetGot &&
-                    (!typeFieldBtn.isSelected())) {
+                    (!typeFieldBtn.isSelected()) && (!chooseAcceptBtn.isSelected())) {
                     // all buttons disables when this is clicked on
                     newStateBtn.disable();
                     chooseAcceptBtn.disable();
@@ -116,6 +125,7 @@ int main(void) {
                 // if the reset button is clicked on 
                 if (resetBtn.getGlobalBounds().contains(localPosition.x, localPosition.y)) {                  
                     newTransBtn.setSelected(false);
+                    chooseAcceptBtn.setSelected(false);
                     states.clear();
                     transitions.clear();
                     acceptStates.clear();
@@ -129,24 +139,24 @@ int main(void) {
                     newTransBtn.disable();
                     chooseAcceptBtn.disable();
                     alphabetGot = false;
+                    prompt.changeColor(sf::Color(217, 17, 203));
                 }
                 // if the field is clicked on it type a string in
                 if (typeFieldBtn.getGlobalBounds().contains(localPosition.x, localPosition.y) &&
-                    (!newTransBtn.isSelected())) {
+                    (!newTransBtn.isSelected()) && (!chooseAcceptBtn.isSelected())) {
                     typeFieldBtn.setSelected(true);
                     typeFieldBtn.enable();
-                    newTransBtn.disable();                    
+                    newTransBtn.disable();    
+                    
                 }
                 // if test string button is clicked on
                 // within here a DFA is created and the string is sent through it
                 // to see if it accepts or rejects it
                 if (submitBtn.getGlobalBounds().contains(localPosition.x, localPosition.y) &&
-                    (!newTransBtn.isSelected())) {
+                    (!newTransBtn.isSelected()) && submitBtn.isEnabled()) {
                     typeFieldBtn.disable();
-                    submitBtn.disable();
-                    
-                    typeFieldBtn.setSelected(false);
-                    
+                    submitBtn.disable();                    
+                    typeFieldBtn.setSelected(false);                    
                     if (!alphabetGot) {                      
                         strInput.clear();
                         str = convertToList(strInput);
@@ -157,14 +167,21 @@ int main(void) {
                     else {
                         alpha.unique();
                         for (int i = 0; i < states.size(); i++) {
-                            verifyTransitions(transitions, states[i], alpha, alphabetGot);
-                        }                     
-                        str = convertToList(strInput);
-                        pair<string, sf::Color> res = testStrOnDFA(states, transitions, acceptStates, str);
-                        prompt.changeStr(res.first);
-                        prompt.changeColor(res.second);
+                            tVerify = verifyTransitions(transitions, states[i], alpha, alphabetGot);
+                            if (!tVerify.first) {
+                                prompt.changeStr(tVerify.second);
+                                prompt.changeColor(sf::Color::Red);
+                                break;
+                            }
+                        }
+                        if (tVerify.first) {
+                            str = convertToList(strInput);
+                            pair<string, sf::Color> res = 
+                                testStrOnDFA(states, transitions, acceptStates, str);
+                            prompt.changeStr(res.first);
+                            prompt.changeColor(res.second);
 
-                       
+                        }
                         strInput.clear();
                         typeFieldBtn.changeName(strInput);
                     }
@@ -173,8 +190,10 @@ int main(void) {
                 if (chooseAcceptBtn.getGlobalBounds().contains(localPosition.x, localPosition.y) &&
                     (!newTransBtn.isSelected()) && alphabetGot) {
                     chooseAcceptBtn.setSelected(true);
-                    tempState->makeAcceptState();
-                    acceptStates.push_back(tempState);
+                    chooseAcceptBtn.disable();
+                    newTransBtn.disable();
+                    newStateBtn.disable();
+                    typeFieldBtn.disable();
                 }
             }
             // handles what happends when the left mouse button is held down
@@ -207,7 +226,15 @@ int main(void) {
                 // if after the transition button is pressed, a state is selected
                 prompt.changeColor(sf::Color(217, 17, 203));
                 submitBtn.setColor(sf::Color(193, 193, 193, 193));
-                prompt.changeStr("Please click a state to transition from");  
+                if (tVerifyChar.first) {
+                    prompt.changeStr("Please click a state to transition from"); 
+                    
+                }
+                else {
+                    prompt.changeStr(tVerifyChar.second);
+                    prompt.changeColor(sf::Color::Red);
+                }
+                
                 if (tempState->getGlobalFR().contains(localPosition.x, localPosition.y) && transState1 == false
                     && event.type == sf::Event::MouseButtonReleased) {
                     // store the selected state in a temp state
@@ -219,16 +246,27 @@ int main(void) {
                 // if after transition button pressed, and first state selected, 
                 // enter a character to assign a transition to
                 if (transState1 == true) {
-                    prompt.changeStr("Enter a Character");          
+                    if (tVerifyChar.first) {
+                         prompt.changeStr("Enter a Character");
+                    }
+                    else {
+                        prompt.changeStr(tVerifyChar.second);
+                        prompt.changeColor(sf::Color::Red);
+                    }
+                            
                     tstr.setS1(tempState2->getState());
                     transDisplay.changeStr(tstr.getStr());
-                    if (event.type == sf::Event::TextEntered) {
-                        if (event.text.unicode < 128) {
-                            transChar = static_cast<char>(event.text.unicode);
-                            transCharEntered = true;
+                    if (event.type == sf::Event::TextEntered) {                       
+                        if (event.text.unicode < 128) {        
+                            tVerifyChar = verifyChar(alpha, static_cast<char>(event.text.unicode));
+                            if (tVerifyChar.first) {
+                                transChar = static_cast<char>(event.text.unicode);
+                                prompt.changeColor(sf::Color(217, 17, 203));
+                                transCharEntered = true;
+                            }                                                     
                         }
                     }
-                }
+                }               
                 // after selecting state, and character, select State to transition to
                 if (transCharEntered == true && transState1 == true) {
                     prompt.changeStr("Click a State to transition to");                     
@@ -246,8 +284,12 @@ int main(void) {
                         std::shared_ptr<Trans> t = std::make_shared<Trans>();
                         t->setPoints(tempState2, tempState);
                         t->setC(transChar);
-                        transitions.push_back(t);
+                        if (!doubleChar(transitions, t)) {
+                            transitions.push_back(t);
+                        }                        
                         prompt.changeStr("Transition made:");
+                        // verify if there are two transitions made                   
+                        doubleTrans(transitions);
                         tstr.setS2(tempState->getState());
                         transDisplay.changeStr(tstr.getStr());
                         newStateBtn.enable();
@@ -259,15 +301,36 @@ int main(void) {
                 }
 
             }
+            if (chooseAcceptBtn.isSelected()) {
+                // if after the transition button is pressed, a state is selected
+                prompt.changeColor(sf::Color(217, 17, 203));
+                submitBtn.setColor(sf::Color(193, 193, 193, 193));
+                prompt.changeStr("Please click a state to\nmake an accept state");
+                if (tempState->getGlobalFR().contains(localPosition.x, localPosition.y) && transState1 == false
+                    && event.type == sf::Event::MouseButtonReleased) {
+           
+                    tempState->makeAcceptState();
+                    acceptStates.push_back(tempState);
+                    acceptChosen = true;
+                    chooseAcceptBtn.setSelected(false);
+                    chooseAcceptBtn.enable();
+                    newTransBtn.enable();
+                    newStateBtn.enable();
+                    
+                }
+            }
             if (twoStatesSelected(states) && event.type == sf::Event::MouseButtonPressed &&
-                mouseStateRet.first == false) {
+                mouseStateRet.first == false && !newTransBtn.isSelected()) {
                    resetTextColor(states); 
                    displayLastStr = false;
                   
             }
             if (typeFieldBtn.isSelected()) {
                 if (event.type == sf::Event::TextEntered) {      
-                    if (event.text.unicode < 128 && strInput.size() < 40) {
+                    if (((event.text.unicode > 47 && event.text.unicode < 58) || 
+                        (event.text.unicode > 64 && event.text.unicode < 91) || 
+                        (event.text.unicode > 96 && event.text.unicode < 123))
+                        && (strInput.size() < 40)) {
                         if (!alphabetGot) {
                             strInput.push_back(static_cast<char>(event.text.unicode));
                             typeFieldBtn.changeName(strInput);
@@ -288,6 +351,7 @@ int main(void) {
             else {
                 prompt.changeStr("An alphabet must be entered to begin");
             }
+          
             updateTransPosition(transitions);
         }
         window.clear();
@@ -302,27 +366,20 @@ int main(void) {
         window.draw(textAboveInputBox);
         // draw all the transitions
         for (int i = 0; i < transitions.size(); i++) {
-            window.draw(*transitions[i]);
+            if (transitions[i]->getTextStr() != "") {
+                window.draw(*transitions[i]);
+            }            
         }
         // draw all the states
         for (int i = 0; i < states.size(); i++) {
             window.draw(*states[i]);
         }
         // draw all the prompts and text
-       // if (newTransBtn.isSelected() || displayLastStr || displayResults) {
-            window.draw(prompt);
-            if (newTransBtn.isSelected() || displayLastStr ) {
+        window.draw(prompt);
+        if (newTransBtn.isSelected() || displayLastStr ) {
             window.draw(transDisplay);            
-            }
-        //}
-       // else {
-           // prompt.changeStr("Please click a state to transition from");
-            //tstr.setS1(" ");
-           // tstr.setC("");
-           // tstr.setS2("");
-            //transDisplay.changeStr(tstr.getStr());
-       // }
-
+        }
+   
         window.display();
     }
     return 0;
@@ -372,9 +429,11 @@ std::list<int> convertToList(std::string str) {
     }
     return ret;
 }
-bool verifyTransitions(std::vector<std::shared_ptr<Trans>> transitions,
+std::pair<bool, string> verifyTransitions(std::vector<std::shared_ptr<Trans>> transitions,
     std::shared_ptr<StateCircle> state, list<int> alpha, bool alphabetGot) {
-    bool ret = true;
+    std::pair<bool, string> ret;
+    ret.first = true;
+    list<int> seen;
     for (int j = 0; j < transitions.size(); j++) {
         if (state == transitions[j]->getStates().first) {
             char c = transitions[j]->getC();
@@ -382,17 +441,33 @@ bool verifyTransitions(std::vector<std::shared_ptr<Trans>> transitions,
             static_cast<int>(c));
             if (found != alpha.end()) {
                 alpha.remove(c);
+                seen.push_back(c);
             }
             else {
-                cout << "error: transition character not in alphabet";
-                ret = false;
+                auto found2 = find(seen.begin(), seen.end(),
+                static_cast<int>(c));
+                if (found2 != seen.end()) {
+                    ret.second = "Error: All states must have\nexactly one transition per character";
+                    ret.first = false;
+                }
             }
         }
     }
     if (!alpha.empty() && alphabetGot) {
-        cout << "Error: All states must have exactly one transition per character";
-        ret = false;
+        ret.second = "Error: All states must have\nexactly one transition per character";
+        ret.first = false;
     }
+    return ret;
+}
+std::pair<bool, string> verifyChar(list<int> alpha, char c) {
+    std::pair<bool, string> ret;
+    ret.first = true;
+    auto found = find(alpha.begin(), alpha.end(), c);
+    if (found != alpha.end()) {
+        return ret;
+    }
+    ret.second = "Error: character not in alphabet";
+    ret.first = false;
     return ret;
 }
 pair<string, sf::Color> testStrOnDFA(std::vector<std::shared_ptr<StateCircle>> states,
@@ -410,7 +485,7 @@ pair<string, sf::Color> testStrOnDFA(std::vector<std::shared_ptr<StateCircle>> s
             return false;
         },
         65,
-            [transitions](int s, int c) {
+        [transitions](int s, int c) {
             for (int i = 0; i < transitions.size(); i++) {
                 if (s == static_cast<int>(transitions[i]->getStates().first->getStateChar()) &&
                     c == transitions[i]->getC()) {
@@ -419,7 +494,7 @@ pair<string, sf::Color> testStrOnDFA(std::vector<std::shared_ptr<StateCircle>> s
             }
             return -1;
         },
-            [acceptStates](int s) {
+        [acceptStates](int s) {
             for (int i = 0; i < acceptStates.size(); i++) {
                 if (s == static_cast<int>(acceptStates[i]->getStateChar())) {
                     return true;
@@ -436,4 +511,31 @@ pair<string, sf::Color> testStrOnDFA(std::vector<std::shared_ptr<StateCircle>> s
         ret.second = sf::Color::Red;
     }
     return ret;
+}
+void doubleTrans(std::vector<std::shared_ptr<Trans>> transitions) {
+    
+    for (int i = 0; i < transitions.size(); i++) {
+        for (int j = 0; j < transitions.size(); j++) {
+            if (transitions[i]->getStates().first == transitions[j]->getStates().first && 
+                transitions[i]->getStates().second == transitions[j]->getStates().second &&
+                i != j && transitions[j]->getTextStr() != "" && transitions[i]->getTextStr() != "") {
+                
+                std::string tStr = transitions[i]->getTextStr() + ", " + transitions[j]->getTextStr();
+                transitions[i]->changeText(tStr);
+                transitions[j]->changeText("");
+              
+            }
+        }  
+     
+    }
+}
+bool doubleChar(std::vector<std::shared_ptr<Trans>> transitions, std::shared_ptr<Trans> trans) {
+    for (int i = 0; i < transitions.size(); i++) {
+        if (transitions[i]->getStates().first == trans->getStates().first &&
+            transitions[i]->getStates().second == trans->getStates().second &&
+            transitions[i]->getC() == trans->getC()) {
+            return true;
+        }
+   }
+    return false;
 }

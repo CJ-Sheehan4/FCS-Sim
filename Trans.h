@@ -16,6 +16,8 @@ public:
 	void setP2(sf::Vector2f p);
 	sf::Text getText();
 	void setText();
+	void changeText(std::string str);
+	std::string getTextStr();
 	sf::Vector2f getP1();
 	sf::Vector2f getP2();
 	void setLine(sf::Vector2f p1, sf::Vector2f p2);

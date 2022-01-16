@@ -107,6 +107,13 @@ void Trans::setText() {
 	}
 	
 }
+void Trans::changeText(std::string str) {
+	text.setString(str);
+	
+}
+std::string Trans::getTextStr() {
+	return text.getString();
+}
 sf::Vector2f Trans::getP1() {
 	return p1;
 }
@@ -171,6 +178,7 @@ void Trans::draw(sf::RenderTarget& target, sf::RenderStates states)const {
 	
 	target.draw(line, 2, sf::Lines);
 	target.draw(selfLoop);
-	target.draw(text);
+	
 	target.draw(arrow);
+	target.draw(text);
 }
